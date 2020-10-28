@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  download-service:
+    build:
+      context: ./
+      args:
+        GITHUB_ACCESS_TOKEN_USERNAME: $GITHUB_ACCESS_TOKEN_USERNAME
+        GITHUB_ACCESS_TOKEN_PASSWORD: $GITHUB_ACCESS_TOKEN_PASSWORD
+    ports:
+      - 10000:10000
+    environment:
+      PLEX_TOKEN: $PLEX_TOKEN
+    extra_hosts:
+      - "raspberrypi.local:192.168.50.108"
