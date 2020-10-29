@@ -13,8 +13,8 @@
 - Add the following environment variables
 
     ```bash
-    export GITHUB_ACCESS_TOKEN_USRERNAME="<github_username>"
-    export GITHUB_ACCESS_TOKEN_PASSWORD="<github_access_token>"
+    export GH_ACCESS_TOKEN_USRERNAME="<github_username>"
+    export GH_ACCESS_TOKEN_PASSWORD="<github_access_token>"
     export BITTORRENT_SERVICE_USERNAME="<username>"
     export BITTORRENT_SERVICE_PASSWORD="<password>"
     export PLEX_TOKEN="<token>"

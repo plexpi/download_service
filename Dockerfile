@@ -9,12 +9,12 @@ RUN mkdir /user && \
     echo 'nobody:x:65534:' > /user/group
 # Create a netrc file using the credentials specified using --build-arg
 RUN printf "machine github.com\n\
-    login ${GITHUB_ACCESS_TOKEN_USRERNAME}\n\
-    password ${GITHUB_ACCESS_TOKEN_PASSWORD}\n\
+    login ${GH_ACCESS_TOKEN_USRERNAME}\n\
+    password ${GH_ACCESS_TOKEN_PASSWORD}\n\
     \n\
     machine api.github.com\n\
-    login ${GITHUB_ACCESS_TOKEN_USRERNAME}\n\
-    password ${GITHUB_ACCESS_TOKEN_PASSWORD}\n"\
+    login ${GH_ACCESS_TOKEN_USRERNAME}\n\
+    password ${GH_ACCESS_TOKEN_PASSWORD}\n"\
     >> /root/.netrc
 RUN chmod 600 /root/.netrc
 # Set the working directory outside $GOPATH to enable the support for modules.
