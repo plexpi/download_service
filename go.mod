@@ -1,4 +1,4 @@
-module github.com/adborbas/plexpicore
+module github.com/plexpi/download_service
 
 go 1.15
 

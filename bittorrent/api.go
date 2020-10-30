@@ -9,10 +9,6 @@ import (
 	"strings"
 )
 
-const (
-	baseURL = "http://raspberrypi.local:24560"
-)
-
 type addTorrentParams struct {
 	urls               string
 	sequentialDownload bool
@@ -31,12 +27,14 @@ func (params addTorrentParams) urlValues() url.Values {
 
 // API ...
 type API struct {
-	client http.Client
+	baseURL string
+	client  http.Client
 }
 
 // NewAPI ...
-func NewAPI(username, password string, client http.Client) API {
+func NewAPI(baseURL, username, password string, client http.Client) API {
 	client.Transport = &qbittorrentAuthTransport{
+		baseURL:           baseURL,
 		username:          username,
 		password:          password,
 		originalTransport: http.DefaultTransport,
@@ -44,7 +42,8 @@ func NewAPI(username, password string, client http.Client) API {
 	}
 
 	return API{
-		client: client,
+		baseURL: baseURL,
+		client:  client,
 	}
 }
 
@@ -60,7 +59,7 @@ func (api API) AddTorrent(torrentURL, category string) error {
 	}
 
 	encodedURLValues := rawParams.urlValues().Encode()
-	httpRequest, err := http.NewRequest(http.MethodPost, baseURL+"/api/v2/torrents/add", strings.NewReader(encodedURLValues))
+	httpRequest, err := http.NewRequest(http.MethodPost, api.baseURL+"/api/v2/torrents/add", strings.NewReader(encodedURLValues))
 	if err != nil {
 		fmt.Printf("Failed to create request: %s", err)
 		return err
@@ -108,6 +107,7 @@ func (api API) buildAddTorrentParams(torrentURL, category string) (addTorrentPar
 }
 
 type qbittorrentAuthTransport struct {
+	baseURL           string
 	username          string
 	password          string
 	originalTransport http.RoundTripper
@@ -150,7 +150,7 @@ func (transport *qbittorrentAuthTransport) RoundTrip(req *http.Request) (*http.R
 
 func (transport *qbittorrentAuthTransport) login() (*http.Cookie, error) {
 	fmt.Println("Logging in ...")
-	url := baseURL + fmt.Sprintf("/api/v2/auth/login?username=%s&password=%s", transport.username, transport.password)
+	url := transport.baseURL + fmt.Sprintf("/api/v2/auth/login?username=%s&password=%s", transport.username, transport.password)
 	resp, err := transport.client.Get(url)
 	if err != nil {
 		fmt.Printf("Failed to login: %+v\n", resp)

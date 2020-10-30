@@ -6,10 +6,14 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/adborbas/plexpicore/bittorrent"
-	"github.com/adborbas/plexpicore/downloader"
-	"github.com/adborbas/plexpicore/plex"
 	"github.com/gorilla/mux"
+	"github.com/plexpi/download_service/bittorrent"
+	"github.com/plexpi/download_service/downloader"
+	"github.com/plexpi/download_service/plex"
+)
+
+const (
+	defaultPort = "45780"
 )
 
 func handleRequests() {
@@ -20,14 +24,27 @@ func handleRequests() {
 	torretDownloader := downloader.NewHTTPTorrentDownloader(bittorrentAPI, mediaScanner)
 	myRouter.HandleFunc("/download", torretDownloader.Download).Methods("POST")
 
-	log.Fatal(http.ListenAndServe(":10000", myRouter))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = defaultPort
+	}
+
+	fmt.Printf("Listening on port: %s \n", port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), myRouter))
 }
 
 func main() {
-	fmt.Println("Rest API v1.0")
+	fmt.Println("Download service started.")
 	handleRequests()
 }
 
 func newBittorentAPI() bittorrent.API {
-	return bittorrent.NewAPI("admin", "adminadmin", http.Client{})
+	username := os.Getenv("BITTORRENT_SERVICE_USERNAME")
+	password := os.Getenv("BITTORRENT_SERVICE_USERNAME")
+	url := os.Getenv("BITTORRENT_SERVICE_URL")
+	return bittorrent.NewAPI(
+		url,
+		username,
+		password,
+		http.Client{})
 }

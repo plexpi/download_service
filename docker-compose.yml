@@ -3,12 +3,9 @@ services:
   download-service:
     build:
       context: ./
-      args:
-        GH_ACCESS_USERNAME: $GH_ACCESS_USERNAME
-        GH_ACCESS_TOKEN_PASSWORD: $GH_ACCESS_TOKEN_PASSWORD
-    ports:
-      - 10000:10000
     environment:
-      PLEX_TOKEN: $PLEX_TOKEN
-    extra_hosts:
-      - "raspberrypi.local:192.168.50.108"
+      BITTORRENT_SERVICE_USERNAME: $BITTORRENT_SERVICE_USERNAME
+      BITTORRENT_SERVICE_PASSWORD: $BITTORRENT_SERVICE_PASSWORD
+      BITTORRENT_SERVICE_URL: $BITTORRENT_SERVICE_URL
+    ports:
+      - 45780:45780
