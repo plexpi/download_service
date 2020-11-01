@@ -16,12 +16,13 @@ const (
 	defaultPort = "45780"
 )
 
-func handleRequests(port string) {
+func handleRequests(port string) *gin.Engine {
 	engine := newEngine()
 	registerDownloader(engine)
 
 	fmt.Printf("Listening on port: %s \n", port)
-	log.Fatal(engine.Run(fmt.Sprintf(":%s", port)))
+
+	return engine
 }
 
 func main() {
@@ -32,7 +33,8 @@ func main() {
 		port = defaultPort
 	}
 
-	handleRequests(port)
+	engine := handleRequests(port)
+	log.Fatal(engine.Run(fmt.Sprintf(":%s", port)))
 }
 
 func registerDownloader(engine *gin.Engine) {
