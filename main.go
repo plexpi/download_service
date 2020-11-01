@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -20,7 +21,7 @@ func handleRequests(port string) {
 	registerDownloader(engine)
 
 	fmt.Printf("Listening on port: %s \n", port)
-	engine.Run(fmt.Sprintf(":%s", port))
+	log.Fatal(engine.Run(fmt.Sprintf(":%s", port)))
 }
 
 func main() {
