@@ -25,4 +25,11 @@ jobs:
         ./bin/golint ./...
     
     - name: Run tests
-      run: go test -v ./...
+      run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+    
+    - name: Codecov
+      uses: codecov/codecov-action@v1.0.14
+      with:
+        token: ${{ secret.CODECOV_TOKEN }}
+        file: "./coverage.txt"
+        fail_ci_if_error: true
