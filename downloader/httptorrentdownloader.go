@@ -1,11 +1,11 @@
 package downloader
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 // BittorrentAPI ...
@@ -35,26 +35,26 @@ func NewHTTPTorrentDownloader(
 }
 
 // Download ...
-func (downloader HTTPTorrentDownloader) Download(w http.ResponseWriter, r *http.Request) {
+func (downloader HTTPTorrentDownloader) Download(c *gin.Context) {
 	fmt.Println("Download called")
-	reqBody, _ := ioutil.ReadAll(r.Body)
-	var request *downloadRequest
-	json.Unmarshal(reqBody, &request)
 
-	if request == nil {
-		json.NewEncoder(w).Encode("Failed to parse request.")
+	var request downloadRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	fmt.Printf("DownloadRequest: %+v \n", request)
 	if err := downloader.torrentAPI.AddTorrent(request.URL, request.Category); err != nil {
-		json.NewEncoder(w).Encode(err.Error())
+		c.String(http.StatusInternalServerError, "%s", err.Error())
 		return
 	}
 
-	time.Sleep(2 * time.Second)
+	time.Sleep(5 * time.Second)
 	if err := downloader.mediaScanner.ScanLibraries(); err != nil {
-		json.NewEncoder(w).Encode(fmt.Errorf("Could not refresh library: %s", err).Error())
+		c.String(http.StatusInternalServerError, "Could not refresh library: %s", err.Error())
 		return
 	}
-	json.NewEncoder(w).Encode("OK")
+
+	c.Status(200)
 }

@@ -4,7 +4,7 @@
 
 - go
 - go modules
-- [mux](github.com/gorilla/mux)
+- [gin](https://github.com/gin-gonic/gin)
 
 ## Requirements
 
@@ -19,6 +19,7 @@
     export BITTORRENT_SERVICE_PASSWORD="<password>"
     export BITTORRENT_SERVICE_URL="<url:port>"
     export PLEX_TOKEN="<plextoken>"
+    export PLEX_SERVICE_URL="<plexurl>"
     ```
 
 1. Run `docker-compose build && docker-compose up`

@@ -4,26 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"strconv"
 	"strings"
 )
-
-type addTorrentParams struct {
-	urls               string
-	sequentialDownload bool
-	firstLastPiecePrio bool
-	savepath           string
-}
-
-func (params addTorrentParams) urlValues() url.Values {
-	data := url.Values{}
-	data.Set("urls", params.urls)
-	data.Set("sequentialDownload", strconv.FormatBool(params.sequentialDownload))
-	data.Set("firstLastPiecePrio", strconv.FormatBool(params.firstLastPiecePrio))
-	data.Set("savepath", params.savepath)
-	return data
-}
 
 // API ...
 type API struct {
@@ -88,75 +71,11 @@ func (api API) AddTorrent(torrentURL, category string) error {
 }
 
 func (api API) buildAddTorrentParams(torrentURL, category string) (addTorrentParams, error) {
-	savePath := ""
-	switch category {
-	case "series":
-		savePath = "/media/plex/series/"
-	case "movies":
-		savePath = "/media/plex/movies/"
-	default:
-		return addTorrentParams{}, fmt.Errorf("Invalid category: %s", category)
-	}
-
 	return addTorrentParams{
+		category:           category,
 		urls:               torrentURL,
 		sequentialDownload: true,
 		firstLastPiecePrio: true,
-		savepath:           savePath,
+		autoTMM:            true,
 	}, nil
-}
-
-type qbittorrentAuthTransport struct {
-	baseURL           string
-	username          string
-	password          string
-	originalTransport http.RoundTripper
-	client            http.Client
-}
-
-func (transport *qbittorrentAuthTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	cookie, err := transport.login()
-	if err != nil {
-		fmt.Printf("Failed to login: %s \n", err)
-		return nil, err
-	}
-
-	fmt.Printf("New cookie: %s \n", cookie.String())
-	req.AddCookie(cookie)
-	fmt.Printf("Resending request with logged in: %+v \n", req)
-	return transport.originalTransport.RoundTrip(req)
-
-	// Clone the request
-	// resp, err := transport.originalTransport.RoundTrip(req)
-	// if err != nil {
-	// 	return resp, err
-	// }
-
-	// if resp.StatusCode == http.StatusForbidden {
-	// 	cookie, err := transport.login()
-	// 	if err != nil {
-	// 		fmt.Printf("Failed to login: %s \n", err)
-	// 		return nil, err
-	// 	}
-
-	// 	fmt.Printf("New cookie: %s \n", cookie.String())
-	// 	req.AddCookie(cookie)
-	// 	fmt.Printf("Resending request with logged in: %+v \n", req)
-	// 	return transport.originalTransport.RoundTrip(req)
-	// }
-
-	// return resp, err
-}
-
-func (transport *qbittorrentAuthTransport) login() (*http.Cookie, error) {
-	fmt.Println("Logging in ...")
-	url := transport.baseURL + fmt.Sprintf("/api/v2/auth/login?username=%s&password=%s", transport.username, transport.password)
-	resp, err := transport.client.Get(url)
-	if err != nil {
-		fmt.Printf("Failed to login: %+v\n", resp)
-		return nil, err
-	}
-
-	fmt.Println("Successfully loged in!")
-	return resp.Cookies()[0], nil
 }
