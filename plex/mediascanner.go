@@ -8,21 +8,19 @@ import (
 	"sync"
 )
 
-const (
-	baseURL = "http://raspberrypi.local:32400"
-)
-
 // MediaScanner ...
 type MediaScanner struct {
-	client *http.Client
-	token  string
+	baseURL string
+	client  *http.Client
+	token   string
 }
 
 // NewMediaScanner ...
-func NewMediaScanner(client *http.Client, token string) MediaScanner {
+func NewMediaScanner(baseURL string, client *http.Client, token string) MediaScanner {
 	return MediaScanner{
-		client: client,
-		token:  token,
+		baseURL: baseURL,
+		client:  client,
+		token:   token,
 	}
 }
 
@@ -119,5 +117,5 @@ func (scanner MediaScanner) getLibraries() ([]string, error) {
 }
 
 func (scanner MediaScanner) url(path string) string {
-	return baseURL + fmt.Sprintf("%s?X-Plex-Token=%s", path, scanner.token)
+	return scanner.baseURL + fmt.Sprintf("%s?X-Plex-Token=%s", path, scanner.token)
 }

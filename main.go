@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"github.com/plexpi/download_service/bittorrent"
 	"github.com/plexpi/download_service/downloader"
 	"github.com/plexpi/download_service/plex"
@@ -16,35 +16,66 @@ const (
 	defaultPort = "45780"
 )
 
-func handleRequests() {
-	myRouter := mux.NewRouter().StrictSlash(true)
+func handleRequests(port string) {
+	engine := newEngine()
+	registerDownloader(engine)
 
-	bittorrentAPI := newBittorentAPI()
-	mediaScanner := plex.NewMediaScanner(http.DefaultClient, os.Getenv("PLEX_TOKEN"))
-	torretDownloader := downloader.NewHTTPTorrentDownloader(bittorrentAPI, mediaScanner)
-	myRouter.HandleFunc("/download", torretDownloader.Download).Methods("POST")
+	fmt.Printf("Listening on port: %s \n", port)
+	log.Fatal(engine.Run(fmt.Sprintf(":%s", port)))
+}
+
+func main() {
+	fmt.Println("Download service started.")
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
 	}
 
-	fmt.Printf("Listening on port: %s \n", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), myRouter))
+	handleRequests(port)
 }
 
-func main() {
-	fmt.Println("Download service started.")
-	handleRequests()
+func registerDownloader(engine *gin.Engine) {
+	bittorrentAPI := newBittorentAPI()
+	mediaScanner := newPlexMediaScanner()
+	torretDownloader := downloader.NewHTTPTorrentDownloader(bittorrentAPI, mediaScanner)
+
+	engine.POST("/download", torretDownloader.Download)
 }
 
 func newBittorentAPI() bittorrent.API {
-	username := os.Getenv("BITTORRENT_SERVICE_USERNAME")
-	password := os.Getenv("BITTORRENT_SERVICE_USERNAME")
-	url := os.Getenv("BITTORRENT_SERVICE_URL")
+	username := readRequiredEnv("BITTORRENT_SERVICE_USERNAME")
+	password := readRequiredEnv("BITTORRENT_SERVICE_PASSWORD")
+	url := readRequiredEnv("BITTORRENT_SERVICE_URL")
 	return bittorrent.NewAPI(
 		url,
 		username,
 		password,
 		http.Client{})
+}
+
+func newPlexMediaScanner() downloader.MediaScanner {
+	plexToken := readRequiredEnv("PLEX_TOKEN")
+	url := readRequiredEnv("PLEX_SERVICE_URL")
+	scanner := plex.NewMediaScanner(url, http.DefaultClient, plexToken)
+	return scanner
+}
+
+func newEngine() *gin.Engine {
+	engine := gin.Default()
+	engine.Use(gin.Logger())
+
+	engine.GET("/log200", func(c *gin.Context) {
+		c.Status(200)
+	})
+	return engine
+}
+
+func readRequiredEnv(key string) string {
+	env := os.Getenv(key)
+	if env == "" {
+		panic(fmt.Sprintf("Could not read env value for: %s", key))
+	}
+
+	return env
 }
