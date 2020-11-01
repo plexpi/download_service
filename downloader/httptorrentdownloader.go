@@ -22,6 +22,7 @@ type MediaScanner interface {
 type HTTPTorrentDownloader struct {
 	torrentAPI   BittorrentAPI
 	mediaScanner MediaScanner
+	scanerOffset time.Duration
 }
 
 // NewHTTPTorrentDownloader ...
@@ -31,6 +32,7 @@ func NewHTTPTorrentDownloader(
 	return HTTPTorrentDownloader{
 		torrentAPI:   torrentAPI,
 		mediaScanner: mediaScanner,
+		scanerOffset: 5,
 	}
 }
 
@@ -50,11 +52,11 @@ func (downloader HTTPTorrentDownloader) Download(c *gin.Context) {
 		return
 	}
 
-	time.Sleep(5 * time.Second)
+	time.Sleep(downloader.scanerOffset * time.Second)
 	if err := downloader.mediaScanner.ScanLibraries(); err != nil {
 		c.String(http.StatusInternalServerError, "Could not refresh library: %s", err.Error())
 		return
 	}
 
-	c.Status(200)
+	c.Status(http.StatusOK)
 }
