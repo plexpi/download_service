@@ -21,8 +21,8 @@ jobs:
       
     - name: Lint
       run: |
-        go get -u go get -u golang.org/x/lint/golint
-        golint ./...
+        GOBIN=$PWD/bin go install golang.org/x/lint/golint
+        ./bin/golint ./...
     
     - name: Run tests
       run: go test -v ./...
