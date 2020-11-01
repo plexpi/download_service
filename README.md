@@ -2,6 +2,8 @@
 
 Part of [plexpi](https://github.com/plexpi/plexpi).
 
+[Public docker image](https://hub.docker.com/repository/docker/adborbas/download_service)
+
 ## Used technologies
 
 - go
