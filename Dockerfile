@@ -8,4 +8,6 @@ RUN CGO_ENABLED=0 go build \
     -installsuffix 'static' \
     -o /service .
 
+FROM scratch
+COPY --from=builder /service /service
 ENTRYPOINT ["/service"]
