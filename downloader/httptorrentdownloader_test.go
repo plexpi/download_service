@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/plexpi/download_service/bittorrent"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -74,7 +75,7 @@ func Test_GivenAddTorrentSucceedsAndMediaScannerSucceeds_WhenDownloadCalled_Then
 	assert.Empty(t, recorder.Body.String())
 }
 
-func givenHTTPTorrentDownloader(torrentAPI BittorrentAPI, mediaScanner MediaScanner) HTTPTorrentDownloader {
+func givenHTTPTorrentDownloader(torrentAPI bittorrent.API, mediaScanner MediaScanner) HTTPTorrentDownloader {
 	return HTTPTorrentDownloader{torrentAPI, mediaScanner, 0}
 }
 
