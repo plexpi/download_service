@@ -9,7 +9,12 @@ import (
 )
 
 // API ...
-type API struct {
+type API interface {
+	AddTorrent(params AddTorrentParams) error
+}
+
+// Service ...
+type Service struct {
 	baseURL string
 	client  http.Client
 }
@@ -24,25 +29,20 @@ func NewAPI(baseURL, username, password string, client http.Client) API {
 		client:            client,
 	}
 
-	return API{
+	return Service{
 		baseURL: baseURL,
 		client:  client,
 	}
 }
 
 // AddTorrent ...
-func (api API) AddTorrent(torrentURL, category string) error {
+func (service Service) AddTorrent(params AddTorrentParams) error {
 	fmt.Println("AddTorrent called")
 
 	fmt.Println("Creating http request.")
 
-	rawParams, err := api.buildAddTorrentParams(torrentURL, category)
-	if err != nil {
-		return err
-	}
-
-	encodedURLValues := rawParams.urlValues().Encode()
-	httpRequest, err := http.NewRequest(http.MethodPost, api.baseURL+"/api/v2/torrents/add", strings.NewReader(encodedURLValues))
+	encodedURLValues := params.urlValues().Encode()
+	httpRequest, err := http.NewRequest(http.MethodPost, service.baseURL+"/api/v2/torrents/add", strings.NewReader(encodedURLValues))
 	if err != nil {
 		fmt.Printf("Failed to create request: %s", err)
 		return err
@@ -52,7 +52,7 @@ func (api API) AddTorrent(torrentURL, category string) error {
 
 	fmt.Printf("Sending request: %+v \n", httpRequest)
 
-	resp, err := api.client.Do(httpRequest)
+	resp, err := service.client.Do(httpRequest)
 	if err != nil {
 		fmt.Printf("Network error: %s \n", err.Error())
 		return err
@@ -68,14 +68,4 @@ func (api API) AddTorrent(torrentURL, category string) error {
 	fmt.Printf("Received: %s \n", string(body))
 
 	return nil
-}
-
-func (api API) buildAddTorrentParams(torrentURL, category string) (addTorrentParams, error) {
-	return addTorrentParams{
-		category:           category,
-		urls:               torrentURL,
-		sequentialDownload: true,
-		firstLastPiecePrio: true,
-		autoTMM:            true,
-	}, nil
 }

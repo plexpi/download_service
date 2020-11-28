@@ -5,20 +5,24 @@ import (
 	"strconv"
 )
 
-type addTorrentParams struct {
-	category           string
-	urls               string
-	sequentialDownload bool
-	firstLastPiecePrio bool
-	autoTMM            bool
+// AddTorrentParams ...
+type AddTorrentParams struct {
+	Category           string
+	Location           string
+	URLs               string
+	SequentialDownload bool
+	FirstLastPiecePrio bool
+	AutoTMM            bool
 }
 
-func (params addTorrentParams) urlValues() url.Values {
+// URLValues ...
+func (params AddTorrentParams) urlValues() url.Values {
 	data := url.Values{}
-	data.Set("urls", params.urls)
-	data.Set("category", params.category)
-	data.Set("sequentialDownload", strconv.FormatBool(params.sequentialDownload))
-	data.Set("firstLastPiecePrio", strconv.FormatBool(params.firstLastPiecePrio))
-	data.Set("autoTMM", strconv.FormatBool(params.autoTMM))
+	data.Set("urls", params.URLs)
+	data.Set("category", params.Category)
+	data.Set("savepath", params.Location)
+	data.Set("sequentialDownload", strconv.FormatBool(params.SequentialDownload))
+	data.Set("firstLastPiecePrio", strconv.FormatBool(params.FirstLastPiecePrio))
+	data.Set("autoTMM", strconv.FormatBool(params.AutoTMM))
 	return data
 }

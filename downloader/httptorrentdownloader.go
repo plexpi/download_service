@@ -6,12 +6,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/plexpi/download_service/bittorrent"
 )
-
-// BittorrentAPI ...
-type BittorrentAPI interface {
-	AddTorrent(url, category string) error
-}
 
 // MediaScanner ...
 type MediaScanner interface {
@@ -20,14 +16,14 @@ type MediaScanner interface {
 
 // HTTPTorrentDownloader ...
 type HTTPTorrentDownloader struct {
-	torrentAPI   BittorrentAPI
+	torrentAPI   bittorrent.API
 	mediaScanner MediaScanner
 	scanerOffset time.Duration
 }
 
 // NewHTTPTorrentDownloader ...
 func NewHTTPTorrentDownloader(
-	torrentAPI BittorrentAPI,
+	torrentAPI bittorrent.API,
 	mediaScanner MediaScanner) HTTPTorrentDownloader {
 	return HTTPTorrentDownloader{
 		torrentAPI:   torrentAPI,
@@ -47,7 +43,8 @@ func (downloader HTTPTorrentDownloader) Download(c *gin.Context) {
 	}
 
 	fmt.Printf("DownloadRequest: %+v \n", request)
-	if err := downloader.torrentAPI.AddTorrent(request.URL, request.Category); err != nil {
+	addTorrentParams := downloader.addTorrentParams(request)
+	if err := downloader.torrentAPI.AddTorrent(addTorrentParams); err != nil {
 		c.String(http.StatusInternalServerError, "%s", err.Error())
 		return
 	}
@@ -59,4 +56,15 @@ func (downloader HTTPTorrentDownloader) Download(c *gin.Context) {
 	}
 
 	c.Status(http.StatusOK)
+}
+
+func (downloader HTTPTorrentDownloader) addTorrentParams(request downloadRequest) bittorrent.AddTorrentParams {
+	return bittorrent.AddTorrentParams{
+		Category:           request.Category,
+		Location:           request.Location,
+		URLs:               request.URL,
+		SequentialDownload: request.SequentialDownload,
+		FirstLastPiecePrio: request.FirstLastPiecePrio,
+		AutoTMM:            request.AutoTMM,
+	}
 }
